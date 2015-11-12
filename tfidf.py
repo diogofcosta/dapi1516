@@ -1,6 +1,7 @@
 import math
 import sys
 import os
+import operator
 from textblob import TextBlob
 
 def tf(word, blob):
@@ -16,45 +17,145 @@ def tfidf(word, blob, bloblist):
     return tf(word, blob) * idf(word, bloblist)
 
 docentes = 'C:/Users/Diogo/Documents/myProjects/DAPIDb/dapi1516/Docentes'
-docentesStats = open('Docentes/aaDocentesStats.txt', 'w')
+ucs = 'C:/Users/Diogo/Documents/myProjects/DAPIDb/dapi1516/Ucs'
+tsf = 'C:/Users/Diogo/Documents/myProjects/DAPIDb/dapi1516/NoticiasTsf'
+publico = 'C:/Users/Diogo/Documents/myProjects/DAPIDb/dapi1516/NoticiasPublico'
+docentesStats = open('Docentes/topDocentesStats.txt', 'w')
+ucsStats = open('Ucs/topUcsStats.txt', 'w')
+tsfStats = open('NoticiasTsf/topTSFStats.txt', 'w')
+publicoStats = open('NoticiasPublico/topPublicoStats.txt', 'w')
+fileStopWords = open("stopwords.txt") 
+listStopWords = fileStopWords.read().splitlines()
+
+num_files = 0
+
+bloblist = []
 
 for subdir, dirs, files in os.walk(docentes):
     for file in files:
         path = 'Docentes/'+file
         content = open(path).read()
         blob = TextBlob(content)
-        for word in blob.words:
-            score = tf(word,blob)
-            docentesStats.write('Word: ')
-            docentesStats.write(word)
-            docentesStats.write(' -- TF: ')
-            docentesStats.write(str(score))
-            docentesStats.write('\n')
+        bloblist.append(blob)
+        num_files += 1
 
-docentesStats.close()
+for subdir, dirs, files in os.walk(ucs):
+    for file in files:
+        path2 = 'Ucs/'+file
+        content = open(path2).read()
+        blob = TextBlob(content)
+        bloblist.append(blob)
+        num_files += 1
 
-"""
-docentesStats = open('Docentes//aaDocentesStats.txt', 'w')
-publicoStats = open('NoticiasPublico\\aaPublicoStats.txt', 'w')
-ucsStats = open('NoticiasTsf\\aaUcsStats.txt', 'w')
-tsfStats = open('Ucs\\aaTsfStats.txt', 'w')
+for subdir, dirs, files in os.walk(publico):
+    for file in files:
+        path3 = 'NoticiasPublico/'+file
+        content = open(path3).read()
+        blob = TextBlob(content)
+        bloblist.append(blob)
+        num_files += 1
 
-for file in os.walk(docentes):
-    if file.endswith(".txt") : 
-        document = tb(file.read())
-        for word in document.words:
-            score = tf(word,document.words)
-            docentesStats.write('Word: ')
-            docentesStats.write(word)
-            docentesStats.write(' -- TF: ')
-            docentesStats.write(score)
-            docentesStats.write('\n')
-        continue
-    else:
-        continue
+for subdir, dirs, files in os.walk(tsf):
+    for file in files:
+        path4 = 'NoticiasTsf/'+file
+        content = open(path4).read()
+        blob = TextBlob(content)
+        bloblist.append(blob)
+        num_files += 1
+
+for subdir, dirs, files in os.walk(docentes):
+    for file in files:
+        path = 'Docentes/'+file
+        content = open(path).read()
+        blob = TextBlob(content)
+        docentesStats.write('\n%r :\n' % (file))
+        listRepeatWords = []
+        d = {}
+        scoresToSort = {word: tfidf(word,blob,bloblist) for word in blob.words}
+        sorted_words = sorted(scoresToSort.items(), key=lambda x: x[1], reverse=True)
+        for word, score in sorted_words[:5]:
+            if word in listStopWords:
+                continue
+            if word not in listRepeatWords:
+                listRepeatWords.append(word)
+                scoreTF = tf(word,blob)
+                scoreNContaining = n_containing(word,bloblist)
+                scoreIDF = idf(word,bloblist)
+                scoreTFIDF = scoreTF * scoreIDF
+                docentesStats.write('Word: %r -- TF: %r -- n_times: %r -- idf: %r -- TF-idf: %r \n' % (word,scoreTF,scoreNContaining,scoreIDF,scoreTFIDF))
+            else:
+                continue
+
+for subdir, dirs, files in os.walk(ucs):
+    for file in files:
+        path = 'Ucs/'+file
+        content = open(path).read()
+        blob = TextBlob(content)
+        ucsStats.write('\n%r :\n' % (file))
+        listRepeatWords = []
+        d = {}
+        scoresToSort = {word: tfidf(word,blob,bloblist) for word in blob.words}
+        sorted_words = sorted(scoresToSort.items(), key=lambda x: x[1], reverse=True)
+        for word, score in sorted_words[:5]:
+            if word in listStopWords:
+                continue
+            if word not in listRepeatWords:
+                listRepeatWords.append(word)
+                scoreTF = tf(word,blob)
+                scoreNContaining = n_containing(word,bloblist)
+                scoreIDF = idf(word,bloblist)
+                scoreTFIDF = scoreTF * scoreIDF
+                ucsStats.write('Word: %r -- TF: %r -- n_times: %r -- idf: %r -- TF-idf: %r \n' % (word,scoreTF,scoreNContaining,scoreIDF,scoreTFIDF))
+            else:
+                continue
+
+for subdir, dirs, files in os.walk(tsf):
+    for file in files:
+        path = 'NoticiasTsf/'+file
+        content = open(path).read()
+        blob = TextBlob(content)
+        tsfStats.write('\n%r :\n' % (file))
+        listRepeatWords = []
+        d = {}
+        scoresToSort = {word: tfidf(word,blob,bloblist) for word in blob.words}
+        sorted_words = sorted(scoresToSort.items(), key=lambda x: x[1], reverse=True)
+        for word, score in sorted_words[:5]:
+            if word in listStopWords:
+                continue
+            if word not in listRepeatWords:
+                listRepeatWords.append(word)
+                scoreTF = tf(word,blob)
+                scoreNContaining = n_containing(word,bloblist)
+                scoreIDF = idf(word,bloblist)
+                scoreTFIDF = scoreTF * scoreIDF
+                tsfStats.write('Word: %r -- TF: %r -- n_times: %r -- idf: %r -- TF-idf: %r \n' % (word,scoreTF,scoreNContaining,scoreIDF,scoreTFIDF))
+            else:
+                continue
+
+for subdir, dirs, files in os.walk(publico):
+    for file in files:
+        path = 'NoticiasPublico/'+file
+        content = open(path).read()
+        blob = TextBlob(content)
+        publicoStats.write('\n%r :\n' % (file))
+        listRepeatWords = []
+        d = {}
+        scoresToSort = {word: tfidf(word,blob,bloblist) for word in blob.words}
+        sorted_words = sorted(scoresToSort.items(), key=lambda x: x[1], reverse=True)
+        for word, score in sorted_words[:5]:
+            if word in listStopWords:
+                continue
+            if word not in listRepeatWords:
+                listRepeatWords.append(word)
+                scoreTF = tf(word,blob)
+                scoreNContaining = n_containing(word,bloblist)
+                scoreIDF = idf(word,bloblist)
+                scoreTFIDF = scoreTF * scoreIDF
+                publicoStats.write('Word: %r -- TF: %r -- n_times: %r -- idf: %r -- TF-idf: %r \n' % (word,scoreTF,scoreNContaining,scoreIDF,scoreTFIDF))
+            else:
+                continue
 
 docentesStats.close()
 publicoStats.close()
-ucsStats.close()
 tsfStats.close()
-"""
+ucsStats.close()
