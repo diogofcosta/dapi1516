@@ -20,10 +20,10 @@ docentes = 'C:/Users/Diogo/Documents/myProjects/DAPIDb/dapi1516/Docentes'
 ucs = 'C:/Users/Diogo/Documents/myProjects/DAPIDb/dapi1516/Ucs'
 tsf = 'C:/Users/Diogo/Documents/myProjects/DAPIDb/dapi1516/NoticiasTsf'
 publico = 'C:/Users/Diogo/Documents/myProjects/DAPIDb/dapi1516/NoticiasPublico'
-docentesStats = open('Docentes/topDocentesStats.txt', 'w')
-ucsStats = open('Ucs/topUcsStats.txt', 'w')
-tsfStats = open('NoticiasTsf/topTSFStats.txt', 'w')
-publicoStats = open('NoticiasPublico/topPublicoStats.txt', 'w')
+docentesStats = open('Docentes/fullDocentesStats.txt', 'w')
+ucsStats = open('Ucs/fullUcsStats.txt', 'w')
+tsfStats = open('NoticiasTsf/fullTSFStats.txt', 'w')
+publicoStats = open('NoticiasPublico/fullPublicoStats.txt', 'w')
 fileStopWords = open("stopwords.txt") 
 listStopWords = fileStopWords.read().splitlines()
 
@@ -62,7 +62,7 @@ for subdir, dirs, files in os.walk(tsf):
         blob = TextBlob(content)
         bloblist.append(blob)
         num_files += 1
-
+"""
 for subdir, dirs, files in os.walk(docentes):
     for file in files:
         path = 'Docentes/'+file
@@ -73,7 +73,7 @@ for subdir, dirs, files in os.walk(docentes):
         d = {}
         scoresToSort = {word: tfidf(word,blob,bloblist) for word in blob.words}
         sorted_words = sorted(scoresToSort.items(), key=lambda x: x[1], reverse=True)
-        for word, score in sorted_words[:5]:
+        for word, score in sorted_words:
             if word in listStopWords:
                 continue
             if word not in listRepeatWords:
@@ -85,6 +85,8 @@ for subdir, dirs, files in os.walk(docentes):
                 docentesStats.write('Word: %r -- TF: %r -- n_times: %r -- idf: %r -- TF-idf: %r \n' % (word,scoreTF,scoreNContaining,scoreIDF,scoreTFIDF))
             else:
                 continue
+"""
+docentesStats.close()
 
 for subdir, dirs, files in os.walk(ucs):
     for file in files:
@@ -93,10 +95,7 @@ for subdir, dirs, files in os.walk(ucs):
         blob = TextBlob(content)
         ucsStats.write('\n%r :\n' % (file))
         listRepeatWords = []
-        d = {}
-        scoresToSort = {word: tfidf(word,blob,bloblist) for word in blob.words}
-        sorted_words = sorted(scoresToSort.items(), key=lambda x: x[1], reverse=True)
-        for word, score in sorted_words[:5]:
+        for word in blob.words:
             if word in listStopWords:
                 continue
             if word not in listRepeatWords:
@@ -109,6 +108,8 @@ for subdir, dirs, files in os.walk(ucs):
             else:
                 continue
 
+ucsStats.close()
+
 for subdir, dirs, files in os.walk(tsf):
     for file in files:
         path = 'NoticiasTsf/'+file
@@ -116,10 +117,7 @@ for subdir, dirs, files in os.walk(tsf):
         blob = TextBlob(content)
         tsfStats.write('\n%r :\n' % (file))
         listRepeatWords = []
-        d = {}
-        scoresToSort = {word: tfidf(word,blob,bloblist) for word in blob.words}
-        sorted_words = sorted(scoresToSort.items(), key=lambda x: x[1], reverse=True)
-        for word, score in sorted_words[:5]:
+        for word in blob.words:
             if word in listStopWords:
                 continue
             if word not in listRepeatWords:
@@ -132,6 +130,8 @@ for subdir, dirs, files in os.walk(tsf):
             else:
                 continue
 
+tsfStats.close()
+
 for subdir, dirs, files in os.walk(publico):
     for file in files:
         path = 'NoticiasPublico/'+file
@@ -139,10 +139,7 @@ for subdir, dirs, files in os.walk(publico):
         blob = TextBlob(content)
         publicoStats.write('\n%r :\n' % (file))
         listRepeatWords = []
-        d = {}
-        scoresToSort = {word: tfidf(word,blob,bloblist) for word in blob.words}
-        sorted_words = sorted(scoresToSort.items(), key=lambda x: x[1], reverse=True)
-        for word, score in sorted_words[:5]:
+        for word in blob.words:
             if word in listStopWords:
                 continue
             if word not in listRepeatWords:
@@ -155,7 +152,4 @@ for subdir, dirs, files in os.walk(publico):
             else:
                 continue
 
-docentesStats.close()
 publicoStats.close()
-tsfStats.close()
-ucsStats.close()
